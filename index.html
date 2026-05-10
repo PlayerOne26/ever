@@ -3,60 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EVER GAY TURBO MOBILE</title>
+    <title>EVER GAY - Mobile Edition</title>
     <style>
         * { box-sizing: border-box; touch-action: manipulation; }
         body {
-            margin: 0; padding: 10px;
-            display: flex; flex-direction: column; align-items: center;
-            min-height: 100vh; background-color: #000;
-            font-family: 'Arial Black', sans-serif; color: white;
-            overflow-x: hidden;
+            margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-height: 100vh; background-color: #ffb6c1; font-family: 'Arial Black', sans-serif; gap: 10px; overflow-x: hidden;
         }
 
-        .cabecera { position: relative; height: 120px; width: 100%; display: flex; justify-content: center; align-items: center; }
+        .cabecera { position: relative; display: flex; align-items: center; justify-content: center; height: 180px; width: 100%; }
         .foto-fondo {
-            position: absolute; width: 100px; height: 100px; opacity: 0.5;
-            clip-path: path('M50,15 C50,15 45,0 27,0 C12,0 0,12 0,27 C0,50 22,65 50,90 C77,65 100,50 100,27 C100,12 87,0 72,0 C55,0 50,15 50,15 Z');
-            background: #ff00ff; z-index: 1;
+            position: absolute; width: 150px; height: 150px; object-fit: cover; z-index: 1; opacity: 0.8;
+            clip-path: path('M75,22 C75,22 67,0 41,0 C18,0 0,18 0,41 C0,75 33,97 75,135 C116,97 150,75 150,41 C150,18 131,0 108,0 C82,0 75,22 75,22 Z');
+            transform: scale(1.15);
         }
-        h1 { font-size: 24px; z-index: 2; background: linear-gradient(#00f2ff, #ff00ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-align: center; }
+
+        h1 {
+            font-size: 30px; text-transform: uppercase; text-align: center; position: relative; z-index: 2;
+            background: linear-gradient(to bottom, #ffffff 0%, #ff00ff 50%, #8b00ff 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0;
+            filter: drop-shadow(3px 3px 0px #000); letter-spacing: -1px;
+            animation: parpadeo 0.8s steps(2, start) infinite;
+        }
+        @keyframes parpadeo { to { visibility: hidden; } }
 
         #game-container {
-            position: relative; width: 100%; max-width: 600px; height: 200px;
-            background: #050505; border-bottom: 3px solid #ff00ff; border-radius: 10px;
-            overflow: hidden;
+            position: relative; width: 95%; max-width: 600px; height: 220px;
+            background-color: rgba(255, 255, 255, 0.3); border-bottom: 4px solid #d14789; border-radius: 15px;
         }
         canvas { width: 100%; height: 100%; display: block; }
 
-        .ui-panel { width: 100%; max-width: 600px; margin-top: 15px; text-align: center; }
-        input { padding: 10px; border-radius: 5px; border: none; width: 70%; margin-bottom: 10px; font-weight: bold; }
+        .ui-panel { width: 95%; max-width: 600px; text-align: center; background: rgba(255,255,255,0.5); padding: 10px; border-radius: 10px; }
+        input { padding: 8px; border-radius: 5px; border: 2px solid #d14789; width: 80%; margin-bottom: 10px; font-weight: bold; text-align: center; }
         
-        .leaderboard {
-            width: 100%; background: #111; border: 1px solid #333; border-radius: 8px;
-            margin-top: 15px; padding: 10px; font-size: 14px;
-        }
-        .leaderboard h3 { color: #00f2ff; margin: 0 0 10px 0; font-size: 16px; }
-        .score-entry { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px solid #222; }
+        .leaderboard { width: 100%; background: #fff; border-radius: 8px; padding: 10px; font-size: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .score-entry { display: flex; justify-content: space-between; padding: 5px; border-bottom: 1px solid #eee; color: #d14789; }
     </style>
 </head>
 <body>
 
     <div class="cabecera">
-        <div class="foto-fondo"></div>
-        <h1>EVER GAY TURBO</h1>
+        <img src="perro.png" alt="Fondo" class="foto-fondo">
+        <h1>EVER GAY EL VIDEOJUEGO</h1>
     </div>
 
     <div id="game-container">
-        <canvas id="gameCanvas" width="600" height="200"></canvas>
+        <canvas id="gameCanvas" width="600" height="220"></canvas>
     </div>
 
     <div class="ui-panel">
-        <input type="text" id="nickname" placeholder="TU APODO CHOLO" maxlength="12">
-        <p style="font-size: 12px; color: #ff00ff;">TOCA LA PANTALLA PARA SALTAR</p>
-        
+        <input type="text" id="nickname" placeholder="PON TU APODO AQUÍ">
         <div class="leaderboard">
-            <h3>TABLA DE LEYENDAS</h3>
+            <strong style="color: #8b00ff;">TOP 5 CHOLOS</strong>
             <div id="scoreList"></div>
         </div>
     </div>
@@ -67,100 +65,110 @@
         const nickInput = document.getElementById("nickname");
         const scoreList = document.getElementById("scoreList");
 
-        // Cargar nombre guardado
         nickInput.value = localStorage.getItem("everGayNick") || "";
-        nickInput.addEventListener("change", () => localStorage.setItem("everGayNick", nickInput.value));
+        nickInput.addEventListener("input", () => localStorage.setItem("everGayNick", nickInput.value));
 
-        let gameActive = true;
-        let score = 0;
-        let gameSpeed = 8;
+        let player = { x: 50, y: 160, w: 40, h: 60, dy: 0, jumpForce: 14, gravity: 0.7, grounded: true };
         let obstacles = [];
-        let player = { x: 50, y: 140, w: 40, h: 60, dy: 0, jumpForce: 15, gravity: 0.9, grounded: true };
-
-        // --- AUDIO ---
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let score = 0;
+        let gameActive = true;
         let musicStarted = false;
 
-        function playNote(freq, start, duration, vol) {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playNote(freq, start, duration) {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
+            osc.type = 'square';
             osc.frequency.setValueAtTime(freq, start);
-            gain.gain.setValueAtTime(vol, start);
+            gain.gain.setValueAtTime(0.1, start);
             gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
             osc.connect(gain); gain.connect(audioCtx.destination);
             osc.start(start); osc.stop(start + duration);
         }
 
-        function playCumbia() {
+        function playMario() {
             if (!gameActive) return;
             const now = audioCtx.currentTime;
-            [329, 329, 0, 329].forEach((f, i) => { if(f>0) playNote(f, now + i*0.12, 0.1, 0.1); });
-            setTimeout(playCumbia, 1500);
+            const m = [329.63, 329.63, 0, 329.63, 0, 261.63, 329.63, 0, 392.00, 0, 0, 0, 196.00];
+            m.forEach((f, i) => { if(f > 0) playNote(f, now + i * 0.13, 0.15); });
+            setTimeout(playMario, 2000);
         }
 
-        // --- LÓGICA TABLA ---
-        function updateLeaderboard() {
+        function saveScore() {
             let scores = JSON.parse(localStorage.getItem("everGayScores") || "[]");
-            if (score > 0) {
-                scores.push({ name: nickInput.value || "Anonimo", pts: score });
-                scores.sort((a, b) => b.pts - a.pts);
-                scores = scores.slice(0, 5); // Solo top 5
-                localStorage.setItem("everGayScores", JSON.stringify(scores));
-            }
+            scores.push({ name: nickInput.value || "Anónimo", pts: score });
+            scores.sort((a, b) => b.pts - a.pts);
+            localStorage.setItem("everGayScores", JSON.stringify(scores.slice(0, 5)));
+            displayScores();
+        }
+
+        function displayScores() {
+            let scores = JSON.parse(localStorage.getItem("everGayScores") || "[]");
             scoreList.innerHTML = scores.map(s => `<div class="score-entry"><span>${s.name}</span><span>${s.pts}</span></div>`).join("");
         }
-        updateLeaderboard();
+        displayScores();
 
-        // --- DIBUJO ---
-        function draw() {
+        // FIGURAS ORIGINALES
+        function drawCharacter(x, y) {
+            ctx.fillStyle = "#3d2b1f";
+            ctx.beginPath(); ctx.arc(x + 20, y - 5, 9, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = "white"; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.arc(x + 16, y - 5, 3, 0, Math.PI * 2); ctx.arc(x + 24, y - 5, 3, 0, Math.PI * 2); ctx.stroke();
+            ctx.fillStyle = "#0000FF";
+            ctx.beginPath(); ctx.ellipse(x + 20, y + 22, 20, 25, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = "#3d2b1f"; ctx.lineWidth = 5;
+            ctx.beginPath(); ctx.moveTo(x + 2, y + 15); ctx.lineTo(x - 8, y + 30);
+            ctx.moveTo(x + 38, y + 15); ctx.lineTo(x + 48, y + 30);
+            ctx.moveTo(x + 12, y + 45); ctx.lineTo(x + 8, y + 60);
+            ctx.moveTo(x + 28, y + 45); ctx.lineTo(x + 32, y + 60); ctx.stroke();
+        }
+
+        function drawObstacle(x, y) {
+            ctx.fillStyle = "black";
+            ctx.beginPath(); ctx.arc(x-10, y+40, 14, 0, Math.PI*2); ctx.arc(x+10, y+40, 14, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); if(ctx.roundRect) ctx.roundRect(x-8, y+5, 16, 40, 5); else ctx.rect(x-8, y+5, 16, 40); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(x, y+5, 11, 8, 0, 0, Math.PI*2); ctx.fill();
+        }
+
+        function update() {
             if (!gameActive) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Fondo
-            ctx.fillStyle = "rgba(40,40,40,0.3)";
-            ctx.font = "bold 30px serif"; ctx.textAlign = "center";
-            ctx.fillText("flaco deja el criko", 300, 100);
-
-            // Jugador
             if (!player.grounded) { player.dy += player.gravity; player.y += player.dy; }
-            if (player.y >= 140) { player.y = 140; player.grounded = true; }
+            if (player.y >= 160) { player.y = 160; player.grounded = true; }
             
-            ctx.fillStyle = "#00f2ff";
-            ctx.shadowBlur = 10; ctx.shadowColor = "#00f2ff";
-            ctx.fillRect(player.x, player.y, 30, 40); // Simplificado para móvil
-            ctx.shadowBlur = 0;
+            drawCharacter(player.x, player.y);
 
-            // Obstáculos
-            if (Math.random() < 0.02) obstacles.push({ x: 600, y: 140 });
-            obstacles.forEach((o, i) => {
-                o.x -= gameSpeed;
-                ctx.fillStyle = "#ff00ff";
-                ctx.fillRect(o.x, o.y + 10, 20, 30);
-
-                if (player.x < o.x + 20 && player.x + 30 > o.x && player.y + 40 > o.y) {
+            if (Math.random() < 0.015) obstacles.push({ x: canvas.width + 50, y: 160 });
+            
+            obstacles.forEach((obs, index) => {
+                obs.x -= 7;
+                drawObstacle(obs.x, obs.y);
+                if (player.x + 30 > obs.x - 15 && player.x < obs.x + 15 && player.y + 45 > obs.y) {
                     gameActive = false;
-                    updateLeaderboard();
+                    saveScore();
                     setTimeout(() => location.reload(), 2000);
                 }
+                if (obs.x + 30 < 0) { obstacles.splice(index, 1); score++; }
             });
-            obstacles = obstacles.filter(o => o.x > -20);
 
-            ctx.fillStyle = "white"; ctx.font = "20px Arial"; ctx.textAlign = "left";
-            ctx.fillText("PTS: " + score++, 20, 30);
-            requestAnimationFrame(draw);
+            ctx.fillStyle = "#d14789"; ctx.font = "20px Arial";
+            ctx.fillText("Score: " + score, 480, 40);
+            requestAnimationFrame(update);
         }
 
-        const jump = () => {
+        const jump = (e) => {
+            if (e) e.preventDefault();
             if (audioCtx.state === 'suspended') audioCtx.resume();
-            if (!musicStarted) { playCumbia(); musicStarted = true; }
+            if (!musicStarted) { playMario(); musicStarted = true; }
             if (player.grounded && gameActive) { player.dy = -player.jumpForce; player.grounded = false; }
         };
 
-        window.addEventListener("touchstart", (e) => { e.preventDefault(); jump(); }, {passive: false});
-        window.addEventListener("mousedown", jump);
-        draw();
+        window.addEventListener("keydown", (e) => { if (e.code === "Space") jump(); });
+        canvas.addEventListener("touchstart", jump, {passive: false});
+        canvas.addEventListener("mousedown", jump);
+        update();
     </script>
 </body>
 </html>
-
-
